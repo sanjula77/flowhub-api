@@ -321,6 +321,9 @@ describe('AuthService', () => {
     });
 
     it('should rollback transaction on error', async () => {
+      // Suppress console.error for this test
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+
       mockUserRepository.emailExists.mockResolvedValue(false);
       mockQueryRunner.query.mockResolvedValue([]);
       mockQueryRunner.manager
@@ -333,6 +336,9 @@ describe('AuthService', () => {
       expect(mockQueryRunner.startTransaction).toHaveBeenCalled();
       expect(mockQueryRunner.rollbackTransaction).toHaveBeenCalled();
       expect(mockQueryRunner.release).toHaveBeenCalled();
+
+      // Restore console.error
+      consoleErrorSpy.mockRestore();
     });
   });
 
