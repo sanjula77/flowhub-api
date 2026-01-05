@@ -15,6 +15,15 @@ module.exports = {
     '!**/entities/**',
   ],
   coverageDirectory: '../coverage',
+  coverageReporters: ['text', 'lcov', 'json-summary', 'html'],
+  coverageThreshold: {
+    global: {
+      branches: 60,
+      functions: 60,
+      lines: 60,
+      statements: 60,
+    },
+  },
   testEnvironment: 'node',
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/$1',

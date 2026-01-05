@@ -1,26 +1,372 @@
-name: CI
+name: CI/CD Pipeline
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - develop
+      - main
+  pull_request:
+    branches:
+      - develop
+      - main
+
+env:
+  NODE_VERSION: '20'
+  BACKEND_DIR: './backend'
+  FRONTEND_DIR: './frontend'
 
 jobs:
-  build-test:
+  # ============================================
+  # BACKEND QUALITY GATES
+  # ============================================
+  backend-lint:
+    name: Backend - Lint
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ env.BACKEND_DIR }}
+    
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Setup Node
+      - name: Setup Node.js ${{ env.NODE_VERSION }}
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: ${{ env.BACKEND_DIR }}/package-lock.json
 
-      - name: Install Backend
-        run: |
-          cd backend
-          npm install
-          npm run test -- --watch=false
+      - name: Install dependencies
+        run: npm ci
 
-      - name: Install Frontend
+      - name: Run ESLint
+        run: npm run lint -- --max-warnings=0
+        continue-on-error: false
+
+  backend-security:
+    name: Backend - Security Audit
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ env.BACKEND_DIR }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: ${{ env.BACKEND_DIR }}/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run npm audit
+        run: npm audit --audit-level=high
+        continue-on-error: false
+
+  backend-unit-tests:
+    name: Backend - Unit Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ env.BACKEND_DIR }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: ${{ env.BACKEND_DIR }}/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run unit tests
+        run: npm run test:unit -- --coverage --coverageReporters=text --coverageReporters=lcov --coverageReporters=json-summary
+
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v4
+        with:
+          file: ${{ env.BACKEND_DIR }}/coverage/lcov.info
+          flags: backend-unit
+          name: backend-unit-coverage
+          fail_ci_if_error: false
+
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-unit-coverage
+          path: ${{ env.BACKEND_DIR }}/coverage/
+          retention-days: 30
+
+  backend-integration-tests:
+    name: Backend - Integration Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ env.BACKEND_DIR }}
+    
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: flowhub
+          POSTGRES_PASSWORD: flowhub
+          POSTGRES_DB: flowhub_db_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    env:
+      NODE_ENV: test
+      DB_HOST: localhost
+      DB_PORT: 5432
+      DB_USER: flowhub
+      DB_PASSWORD: flowhub
+      DB_NAME: flowhub_db_test
+      JWT_SECRET: test-jwt-secret-key-for-testing-only
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: ${{ env.BACKEND_DIR }}/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Wait for PostgreSQL
         run: |
-          cd frontend
-          npm install
-          npm run lint
+          until pg_isready -h localhost -p 5432 -U flowhub; do
+            echo "Waiting for PostgreSQL..."
+            sleep 2
+          done
+
+      - name: Run integration tests
+        run: npm run test:integration -- --coverage --coverageReporters=text --coverageReporters=lcov --coverageReporters=json-summary
+
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v4
+        with:
+          file: ${{ env.BACKEND_DIR }}/coverage/lcov.info
+          flags: backend-integration
+          name: backend-integration-coverage
+          fail_ci_if_error: false
+
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-integration-coverage
+          path: ${{ env.BACKEND_DIR }}/coverage/
+          retention-days: 30
+
+  backend-coverage-check:
+    name: Backend - Coverage Threshold
+    runs-on: ubuntu-latest
+    needs: [backend-unit-tests, backend-integration-tests]
+    defaults:
+      run:
+        working-directory: ${{ env.BACKEND_DIR }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: ${{ env.BACKEND_DIR }}/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download unit test coverage
+        uses: actions/download-artifact@v4
+        with:
+          name: backend-unit-coverage
+          path: ${{ env.BACKEND_DIR }}/coverage/
+
+      - name: Download integration test coverage
+        uses: actions/download-artifact@v4
+        with:
+          name: backend-integration-coverage
+          path: ${{ env.BACKEND_DIR }}/coverage/
+
+      - name: Run coverage with thresholds
+        run: npm run test:cov
+
+  backend-build:
+    name: Backend - Build
+    runs-on: ubuntu-latest
+    needs: [backend-lint, backend-security]
+    defaults:
+      run:
+        working-directory: ${{ env.BACKEND_DIR }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: ${{ env.BACKEND_DIR }}/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build application
+        run: npm run build
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-build
+          path: ${{ env.BACKEND_DIR }}/dist/
+          retention-days: 7
+
+  # ============================================
+  # FRONTEND QUALITY GATES
+  # ============================================
+  frontend-lint:
+    name: Frontend - Lint
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ env.FRONTEND_DIR }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: ${{ env.FRONTEND_DIR }}/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint
+        run: npm run lint
+        continue-on-error: false
+
+  frontend-security:
+    name: Frontend - Security Audit
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ env.FRONTEND_DIR }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: ${{ env.FRONTEND_DIR }}/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run npm audit
+        run: npm audit --audit-level=high
+        continue-on-error: false
+
+  frontend-build:
+    name: Frontend - Build
+    runs-on: ubuntu-latest
+    needs: [frontend-lint, frontend-security]
+    defaults:
+      run:
+        working-directory: ${{ env.FRONTEND_DIR }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: ${{ env.FRONTEND_DIR }}/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Next.js application
+        run: npm run build
+        env:
+          NODE_ENV: production
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-build
+          path: ${{ env.FRONTEND_DIR }}/.next/
+          retention-days: 7
+
+  # ============================================
+  # PIPELINE SUMMARY
+  # ============================================
+  ci-success:
+    name: CI Pipeline - Success
+    runs-on: ubuntu-latest
+    needs: [
+      backend-lint,
+      backend-security,
+      backend-unit-tests,
+      backend-integration-tests,
+      backend-coverage-check,
+      backend-build,
+      frontend-lint,
+      frontend-security,
+      frontend-build
+    ]
+    if: always()
+    
+    steps:
+      - name: Check all jobs status
+        run: |
+          if [ "${{ needs.backend-lint.result }}" != "success" ] || \
+             [ "${{ needs.backend-security.result }}" != "success" ] || \
+             [ "${{ needs.backend-unit-tests.result }}" != "success" ] || \
+             [ "${{ needs.backend-integration-tests.result }}" != "success" ] || \
+             [ "${{ needs.backend-coverage-check.result }}" != "success" ] || \
+             [ "${{ needs.backend-build.result }}" != "success" ] || \
+             [ "${{ needs.frontend-lint.result }}" != "success" ] || \
+             [ "${{ needs.frontend-security.result }}" != "success" ] || \
+             [ "${{ needs.frontend-build.result }}" != "success" ]; then
+            echo "❌ One or more jobs failed"
+            exit 1
+          else
+            echo "✅ All CI checks passed"
+          fi
