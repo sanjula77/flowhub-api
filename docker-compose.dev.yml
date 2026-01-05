@@ -1,0 +1,78 @@
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    ports:
+      - "3000:3000"
+    volumes:
+      # Mount source code for hot reloading - changes reflect immediately
+      - ./frontend:/app
+      # Exclude node_modules and .next from host to use container versions
+      - /app/node_modules
+      - /app/.next
+    environment:
+      - NODE_ENV=development
+      - WATCHPACK_POLLING=true
+      - CHOKIDAR_USEPOLLING=true
+      - NEXT_PUBLIC_API_URL=http://localhost:3001
+    depends_on:
+      - backend
+    command: npm run dev
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    ports:
+      - "3001:3001"
+    volumes:
+      # Mount source code for hot reloading
+      - ./backend/src:/app/src
+      - ./backend/tsconfig.json:/app/tsconfig.json
+      - ./backend/nest-cli.json:/app/nest-cli.json
+      - ./backend/package.json:/app/package.json
+      # Exclude node_modules and dist from host to use container versions
+      - /app/node_modules
+      - backend-dist:/app/dist
+    environment:
+      - NODE_ENV=development
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_USER=flowhub
+      - DB_PASSWORD=flowhub
+      - DB_NAME=flowhub_db
+      - JWT_SECRET=your-super-secret-jwt-key-change-in-production
+      - FRONTEND_URL=http://localhost:3000
+    depends_on:
+      - db
+    command: sh -c "npm run build || true && npm run start:dev"
+
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: flowhub
+      POSTGRES_PASSWORD: flowhub
+      POSTGRES_DB: flowhub_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  wso2:
+    image: wso2/wso2am:4.3.0
+    ports:
+      - "9443:9443"
+      - "8243:8243"
+      - "8280:8280"
+    environment:
+      - JAVA_OPTS=-Xms512m -Xmx1024m
+    volumes:
+      - wso2-data:/home/wso2carbon/wso2am-4.3.0/repository
+      - wso2-logs:/home/wso2carbon/wso2am-4.3.0/repository/logs
+
+volumes:
+  postgres-data:
+  wso2-data:
+  wso2-logs:
+  backend-dist:
