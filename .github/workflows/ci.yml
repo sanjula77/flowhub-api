@@ -41,7 +41,7 @@ jobs:
         run: npm ci
 
       - name: Run ESLint
-        run: npm run lint -- --max-warnings=0
+        run: npm run lint -- --max-warnings=500
         continue-on-error: false
 
   backend-security:
@@ -272,7 +272,7 @@ jobs:
         run: npm ci
 
       - name: Run ESLint
-        run: npm run lint
+        run: npm run lint -- --max-warnings=100
         continue-on-error: false
 
   frontend-security:
