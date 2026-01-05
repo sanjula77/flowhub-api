@@ -1,0 +1,49 @@
+services:
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+  backend:
+    build: ./backend
+    ports:
+      - "3001:3001"
+    environment:
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_USER=flowhub
+      - DB_PASSWORD=flowhub
+      - DB_NAME=flowhub_db
+      - JWT_SECRET=your-super-secret-jwt-key-change-in-production
+    depends_on:
+      - db
+
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: flowhub
+      POSTGRES_PASSWORD: flowhub
+      POSTGRES_DB: flowhub_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  wso2:
+    image: wso2/wso2am:4.3.0
+    ports:
+      - "9443:9443"
+      - "8243:8243"
+      - "8280:8280"
+    environment:
+      - JAVA_OPTS=-Xms512m -Xmx1024m
+    volumes:
+      - wso2-data:/home/wso2carbon/wso2am-4.3.0/repository
+      - wso2-logs:/home/wso2carbon/wso2am-4.3.0/repository/logs
+
+volumes:
+  postgres-data:
+  wso2-data:
+  wso2-logs:

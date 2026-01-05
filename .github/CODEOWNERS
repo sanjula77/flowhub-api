@@ -1,0 +1,20 @@
+# Global code owners
+* @sanjula77
+
+# Backend code owners
+/backend/ @sanjula77
+
+# Frontend code owners
+/frontend/ @sanjula77
+
+# Infrastructure and CI/CD
+/.github/ @sanjula77
+/docker-compose*.yml @sanjula77
+/Dockerfile* @sanjula77
+
+# Documentation
+/docs/ @sanjula77
+
+# Database
+/backend/src/database/ @sanjula77
+
