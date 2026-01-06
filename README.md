@@ -131,6 +131,7 @@ FlowHub is a production-ready, enterprise-grade project management platform buil
 
 ### Option 1: Docker Compose (Recommended)
 
+**Production/Standard Setup:**
 ```bash
 # Clone repository
 git clone https://github.com/sanjula77/flowhub-api.git
@@ -143,11 +144,20 @@ docker-compose up -d
 docker-compose logs -f
 ```
 
+**Development Setup (with hot reloading):**
+```bash
+# Use development compose file for live code reloading
+docker-compose -f docker-compose.dev.yml up -d
+```
+
 **Access Points:**
 - Frontend: http://localhost:3000
 - Backend API: http://localhost:3001
+- PostgreSQL: `localhost:5432` (production) or `localhost:5433` (development)
 - WSO2 Publisher: https://localhost:9443/publisher
 - WSO2 Developer Portal: https://localhost:9443/devportal
+
+> **Note:** `docker-compose.yml` is for production/standard use. `docker-compose.dev.yml` includes volume mounts for hot reloading during development.
 
 ### Option 2: Local Development
 
