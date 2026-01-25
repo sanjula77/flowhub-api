@@ -6,22 +6,22 @@ Integration tests require a real PostgreSQL database connection.
 
 ### Using Docker (Recommended)
 
-If you're using Docker Compose, the database is already configured. Just ensure your containers are running:
+If using Docker Compose, the database is already configured. Ensure containers are running:
 
 ```bash
 docker ps  # Verify flowhub-db-1 is running
 ```
 
-The database credentials from `docker-compose.yml` are:
-- **Host**: `localhost` (from host machine) or `db` (from Docker network)
-- **Port**: `5432`
-- **User**: `flowhub`
-- **Password**: `flowhub`
-- **Database**: `flowhub_db`
+**Database credentials from `docker-compose.yml`:**
+- **Host:** `localhost` (from host machine) or `db` (from Docker network)
+- **Port:** `5432`
+- **User:** `flowhub`
+- **Password:** `flowhub`
+- **Database:** `flowhub_db`
 
 ### Running Tests from Host Machine
 
-When running tests from your host machine (not inside Docker), set these environment variables:
+When running tests from your host machine (not inside Docker), set environment variables:
 
 ```powershell
 # Windows PowerShell
@@ -44,7 +44,7 @@ DB_NAME=flowhub_db
 
 ### Running Tests Inside Docker Container
 
-If you want to run tests inside the backend container:
+If running tests inside the backend container:
 
 ```bash
 docker exec -it flowhub-backend-1 npm run test:integration
@@ -52,11 +52,15 @@ docker exec -it flowhub-backend-1 npm run test:integration
 
 In this case, use `DB_HOST=db` (Docker service name) instead of `localhost`.
 
+---
+
 ## Running Integration Tests
 
 ```bash
 npm run test:integration
 ```
+
+---
 
 ## Important Notes
 
@@ -65,10 +69,11 @@ npm run test:integration
 - Tests require the database to be accessible with the provided credentials
 - If database connection fails, all tests will fail with authentication errors
 
+---
+
 ## Test Coverage
 
-- **Authentication Flow**: Signup, login, token validation
-- **Team Management**: Team creation, member management, role changes
-- **Project Workflow**: Project creation, access control, soft deletion
-- **Task Workflow**: Task creation, assignment, status transitions, deletion
-
+- **Authentication Flow:** Signup, login, token validation
+- **Team Management:** Team creation, member management, role changes
+- **Project Workflow:** Project creation, access control, soft deletion
+- **Task Workflow:** Task creation, assignment, status transitions, deletion

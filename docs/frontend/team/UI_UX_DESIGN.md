@@ -1,64 +1,47 @@
 # Team Dashboard - UI/UX Design
 
+Design principles and visual guidelines.
+
 ## Design Principles
 
-### 1. Modern & Clean
-- Gradient accents (blue to purple)
-- White cards with subtle shadows
-- Generous spacing
-- Rounded corners
-
-### 2. Responsive
-- Mobile-first approach
-- Flexible layouts
-- Touch-friendly buttons
-- Readable text sizes
-
-### 3. Accessible
-- High contrast ratios
-- Clear visual hierarchy
-- Intuitive navigation
-- Error states
-
-### 4. Professional
-- Consistent color scheme
-- Professional typography
-- Smooth animations
-- Polished interactions
+1. **Modern & Clean:** Gradient accents, white cards, generous spacing, rounded corners
+2. **Responsive:** Mobile-first approach, flexible layouts, touch-friendly buttons
+3. **Accessible:** High contrast ratios, clear visual hierarchy, intuitive navigation
+4. **Professional:** Consistent color scheme, professional typography, smooth animations
 
 ---
 
 ## Color Palette
 
 ### Primary Colors
-- **Blue**: `#2563eb` (blue-600)
-- **Purple**: `#9333ea` (purple-600)
-- **Gradient**: `from-blue-600 to-purple-600`
+- **Blue:** `#2563eb` (blue-600)
+- **Purple:** `#9333ea` (purple-600)
+- **Gradient:** `from-blue-600 to-purple-600`
 
 ### Status Colors
-- **Success**: `#10b981` (green-500)
-- **Error**: `#ef4444` (red-500)
-- **Warning**: `#f59e0b` (amber-500)
+- **Success:** `#10b981` (green-500)
+- **Error:** `#ef4444` (red-500)
+- **Warning:** `#f59e0b` (amber-500)
 
 ### Neutral Colors
-- **Gray Scale**: `gray-50` to `gray-900`
-- **Background**: `gray-50` to `gray-100` (gradient)
-- **Cards**: `white`
-- **Borders**: `gray-200`
+- **Gray Scale:** `gray-50` to `gray-900`
+- **Background:** `gray-50` to `gray-100` (gradient)
+- **Cards:** `white`
+- **Borders:** `gray-200`
 
 ---
 
 ## Typography
 
 ### Headings
-- **H1**: `text-2xl md:text-3xl font-bold` (Team name)
-- **H2**: `text-lg font-semibold` (Section titles)
-- **H3**: `text-base font-medium` (Card titles)
+- **H1:** `text-2xl md:text-3xl font-bold` (Team name)
+- **H2:** `text-lg font-semibold` (Section titles)
+- **H3:** `text-base font-medium` (Card titles)
 
 ### Body Text
-- **Primary**: `text-sm text-gray-900`
-- **Secondary**: `text-sm text-gray-500`
-- **Muted**: `text-xs text-gray-400`
+- **Primary:** `text-sm text-gray-900`
+- **Secondary:** `text-sm text-gray-500`
+- **Muted:** `text-xs text-gray-400`
 
 ---
 
@@ -73,13 +56,6 @@
 - Member count badge
 - Role badges
 - Invite button (admin only)
-
-**Visual Hierarchy:**
-1. Team avatar (most prominent)
-2. Team name
-3. Description
-4. Metadata (count, roles)
-5. Actions (invite button)
 
 **Spacing:**
 - Padding: `p-6 md:p-8`
@@ -104,16 +80,6 @@
 - Role badge (colored)
 - Remove button (admin only, not for self)
 
-**Empty State:**
-- Large icon
-- Message text
-- Helpful description
-
-**Interactions:**
-- Hover effect on cards
-- Smooth transitions
-- Loading states
-
 ---
 
 ### 3. Invite Modal
@@ -131,31 +97,16 @@
 - Error display
 - Submit button
 
-**Visual Design:**
-- White background
-- Rounded corners
-- Shadow for depth
-- Focus states on inputs
-
 ---
 
 ## UI Patterns
 
-### 1. Cards
-
-**Style:**
+### Cards
 ```css
 bg-white rounded-xl shadow-sm border border-gray-200
 ```
 
-**Usage:**
-- Team header
-- Member list container
-- Modal background
-
----
-
-### 2. Buttons
+### Buttons
 
 **Primary Button:**
 ```css
@@ -175,9 +126,7 @@ hover:bg-gray-200
 text-red-600 hover:bg-red-50
 ```
 
----
-
-### 3. Badges
+### Badges
 
 **Role Badge (ADMIN):**
 ```css
@@ -188,27 +137,6 @@ bg-purple-100 text-purple-700 border border-purple-200
 ```css
 bg-gray-100 text-gray-700 border border-gray-200
 ```
-
-**Status Badge:**
-```css
-bg-blue-100 text-blue-700
-```
-
----
-
-### 4. Avatars
-
-**Team Avatar:**
-- Large (48px)
-- Gradient background
-- First letter of team name
-- Rounded corners
-
-**User Avatar:**
-- Medium (40px)
-- Gradient background
-- Initials or first letter
-- Circular
 
 ---
 
@@ -235,79 +163,18 @@ bg-blue-100 text-blue-700
 
 ## Animations & Transitions
 
-### Loading States
-- Spinning loader
-- Smooth rotation
-- Dual-ring effect
-
-### Hover Effects
-- Button color transitions
-- Card background changes
-- Shadow elevation
-- Transform scale (subtle)
-
-### Modal
-- Fade-in backdrop
-- Slide-up modal
-- Smooth transitions
+- **Loading States:** Spinning loader, smooth rotation
+- **Hover Effects:** Button color transitions, card background changes, shadow elevation
+- **Modal:** Fade-in backdrop, slide-up modal, smooth transitions
 
 ---
 
 ## Accessibility Features
 
-### 1. Color Contrast
-- WCAG AA compliant
-- High contrast text
-- Clear visual indicators
-
-### 2. Focus States
-- Visible focus rings
-- Keyboard navigation
-- Tab order
-
-### 3. Screen Readers
-- Semantic HTML
-- ARIA labels (can be added)
-- Alt text for icons
-
-### 4. Error States
-- Clear error messages
-- Visual error indicators
-- Helpful guidance
-
----
-
-## User Experience Flow
-
-### 1. First Visit
-1. User logs in
-2. Redirected to team dashboard
-3. Loading spinner shown
-4. Team data loads
-5. Dashboard renders
-
-### 2. Viewing Team
-1. See team header with info
-2. See member count
-3. See own role badge
-4. (If admin) See member list
-5. (If admin) See invite button
-
-### 3. Inviting Member
-1. Click "Invite Member"
-2. Modal opens
-3. Fill form
-4. Submit
-5. Success message
-6. Modal closes
-7. Members list refreshes
-
-### 4. Removing Member
-1. Click "Remove" on member
-2. Confirm dialog
-3. Member removed
-4. List refreshes
-5. Success feedback
+1. **Color Contrast:** WCAG AA compliant, high contrast text
+2. **Focus States:** Visible focus rings, keyboard navigation
+3. **Screen Readers:** Semantic HTML, ARIA labels, alt text for icons
+4. **Error States:** Clear error messages, visual error indicators
 
 ---
 
@@ -333,54 +200,35 @@ bg-blue-100 text-blue-700
 
 ## Best Practices
 
-### 1. Visual Hierarchy
-- Most important = largest, boldest
-- Secondary = smaller, lighter
-- Actions = prominent buttons
-
-### 2. Consistency
-- Same spacing scale
-- Same color usage
-- Same component styles
-
-### 3. Feedback
-- Loading states
-- Success messages
-- Error messages
-- Hover effects
-
-### 4. Performance
-- Lazy loading (if needed)
-- Optimized images
-- Efficient re-renders
+1. **Visual Hierarchy:** Most important = largest, boldest
+2. **Consistency:** Same spacing scale, same color usage, same component styles
+3. **Feedback:** Loading states, success messages, error messages, hover effects
+4. **Performance:** Lazy loading, optimized images, efficient re-renders
 
 ---
 
 ## Summary
 
 **Design System:**
-- ✅ Modern gradient accents
-- ✅ Clean white cards
-- ✅ Professional typography
-- ✅ Consistent spacing
+- Modern gradient accents
+- Clean white cards
+- Professional typography
+- Consistent spacing
 
 **Responsive:**
-- ✅ Mobile-first
-- ✅ Flexible layouts
-- ✅ Touch-friendly
-- ✅ Desktop optimized
+- Mobile-first
+- Flexible layouts
+- Touch-friendly
+- Desktop optimized
 
 **Accessibility:**
-- ✅ High contrast
-- ✅ Clear focus states
-- ✅ Semantic HTML
-- ✅ Error handling
+- High contrast
+- Clear focus states
+- Semantic HTML
+- Error handling
 
 **User Experience:**
-- ✅ Smooth animations
-- ✅ Clear feedback
-- ✅ Intuitive navigation
-- ✅ Polished interactions
-
-The UI/UX design is modern, accessible, and provides an excellent user experience across all devices.
-
+- Smooth animations
+- Clear feedback
+- Intuitive navigation
+- Polished interactions

@@ -1,5 +1,7 @@
 # WSO2 API Manager - Quick Start Guide
 
+Quick configuration steps for WSO2 API Manager.
+
 ## Prerequisites
 
 - Docker containers running:
@@ -35,16 +37,13 @@ Go to **"Resources"** tab, add:
 **Users:**
 - `GET /users/me`
 - `GET /users`
-- `GET /users/:id`
 - `POST /users`
 - `PUT /users/:id`
-- `PUT /users/me`
 - `DELETE /users/:id`
 
 **Teams:**
 - `GET /teams/me`
 - `GET /teams`
-- `GET /teams/:id`
 - `POST /teams`
 - `PUT /teams/:id`
 - `DELETE /teams/:id`
@@ -58,8 +57,8 @@ Go to **"Security"** tab:
 ### 5. Enable JWT Forwarding
 
 Go to **"Runtime Configuration"** tab:
-- ✅ Enable **"JWT Assertion Forwarding"**
-- ✅ Forward user claims
+- Enable **"JWT Assertion Forwarding"**
+- Forward user claims
 
 ### 6. Configure Rate Limiting
 
@@ -70,14 +69,14 @@ Go to **"Runtime Configuration"** → **"Throttle Policies"**:
 ### 7. Enable Analytics
 
 Go to **"Runtime Configuration"** tab:
-- ✅ Enable **"Analytics"**
+- Enable **"Analytics"**
 
 ### 8. Configure CORS
 
 Go to **"Runtime Configuration"** → **"CORS"**:
-- ✅ Enable CORS
+- Enable CORS
 - Origins: `http://localhost:3000`, `https://localhost:9443`
-- Credentials: ✅ Enabled
+- Credentials: Enabled
 
 ### 9. Publish API
 
@@ -135,18 +134,12 @@ curl -X GET "https://localhost:8243/flowhub/1.0.0/users/me" \
 ## Common Issues
 
 ### Issue: Cannot connect to backend
-
-**Solution:** Check backend is running:
-```bash
-docker ps | grep flowhub-backend-1
-```
+**Solution:** Check backend is running: `docker ps | grep flowhub-backend-1`
 
 ### Issue: Invalid credentials
-
 **Solution:** Use WSO2 OAuth token, not backend JWT
 
 ### Issue: CORS error
-
 **Solution:** Configure CORS in Runtime Configuration
 
 ---
@@ -166,4 +159,3 @@ docker ps | grep flowhub-backend-1
 10. Test API
 
 Your API is now protected by WSO2 with OAuth 2.0, JWT forwarding, rate limiting, and analytics!
-
