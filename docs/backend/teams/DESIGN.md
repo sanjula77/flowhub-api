@@ -1,32 +1,26 @@
-# Team Domain - Clean Architecture Design
+# Team Domain Architecture
 
-## Overview
-
-The Team domain follows Clean Architecture principles with clear separation of concerns, repository pattern, and proper relationship management.
+Clean Architecture design with repository pattern and relationship management.
 
 ## Architecture Layers
 
-### 1. **Domain Layer** (Entity)
+### 1. Domain Layer (Entity)
 - **File:** `team.entity.ts`
-- **Purpose:** Core business entity, database-agnostic
-- **Contains:** 
-  - Team properties (name, slug, description)
-  - Admin ownership relationship
-  - One-to-many users relationship
-  - Soft delete support
+- **Purpose:** Core business entity
+- **Contains:** Team properties, admin ownership, one-to-many users relationship, soft delete support
 
-### 2. **Repository Layer** (Data Access)
+### 2. Repository Layer (Data Access)
 - **Interface:** `repositories/team.repository.interface.ts`
 - **Implementation:** `repositories/team.repository.ts`
 - **Purpose:** Abstracts data access operations
 - **Benefits:** Testable, swappable, follows DIP
 
-### 3. **DTO Layer** (Data Transfer Objects)
+### 3. DTO Layer
 - **CreateTeamDto:** Input validation for team creation
 - **UpdateTeamDto:** Input validation for team updates
 - **TeamResponseDto:** Output format (excludes deletedAt)
 
-### 4. **Service Layer** (Business Logic)
+### 4. Service Layer (Business Logic)
 - **File:** `teams.service.ts`
 - **Purpose:** Contains business rules
 - **Responsibilities:**
@@ -35,13 +29,12 @@ The Team domain follows Clean Architecture principles with clear separation of c
   - Delete safety checks (prevent deletion if users exist)
   - Entity → DTO transformation
 
-### 5. **Controller Layer** (Presentation)
+### 5. Controller Layer (Presentation)
 - **File:** `teams.controller.ts`
 - **Purpose:** HTTP request/response handling
-- **Responsibilities:**
-  - Route definitions
-  - DTO validation (automatic via ValidationPipe)
-  - Authentication/Authorization
+- **Responsibilities:** Route definitions, DTO validation, Authentication/Authorization
+
+---
 
 ## Key Features
 
@@ -60,11 +53,6 @@ adminUser?: User;
 @Column({ name: 'admin_user_id', nullable: true })
 adminUserId?: string;
 ```
-
-**Use Cases:**
-- Track team ownership
-- Assign team management permissions
-- Query teams by admin
 
 **Safety:**
 - If admin user is deleted → `adminUserId` set to NULL
@@ -113,7 +101,6 @@ team: Team;
 
 2. **Database Layer:**
    ```sql
-   -- Foreign key constraint
    ON DELETE RESTRICT
    ```
 
@@ -154,112 +141,63 @@ teams/
 │   └── team.repository.ts           # TypeORM impl
 ├── teams.service.ts                  # Business logic
 ├── teams.controller.ts              # HTTP handling
-├── teams.module.ts                   # DI setup
-├── DESIGN.md                         # This file
-└── RELATIONSHIPS.md                  # Relationship details
+└── teams.module.ts                   # DI setup
 ```
+
+---
 
 ## Usage Examples
 
 ### Create Team
 
 ```typescript
-// Controller
 @Post()
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRole.ADMIN)
 async create(@Body() createTeamDto: CreateTeamDto) {
   return this.teamsService.create(createTeamDto);
 }
-
-// Service
-async create(dto: CreateTeamDto): Promise<TeamResponseDto> {
-  // Validate slug uniqueness
-  if (await this.teamRepository.slugExists(dto.slug)) {
-    throw new ConflictException('Slug already exists');
-  }
-  
-  // Create via repository
-  const team = await this.teamRepository.create(dto);
-  
-  // Return DTO
-  return this.toResponseDto(team);
-}
 ```
 
 ### Delete Team (Safe)
 
 ```typescript
-// Service
 async softDelete(id: string): Promise<void> {
-  // Check for active users
   if (await this.teamRepository.hasActiveUsers(id)) {
     const count = await this.teamRepository.countActiveUsers(id);
     throw new ConflictException(
       `Cannot delete team: ${count} active user(s) still belong to this team`
     );
   }
-  
-  // Safe to delete
   await this.teamRepository.softDelete(id);
 }
 ```
 
+---
+
 ## Future Extensibility
 
 ### 1. Many-to-Many Users ↔ Teams
-
-**Current:** One user, one team  
-**Future:** One user, many teams
-
-**Migration:**
 - Create `user_teams` junction table
 - Migrate existing data
 - Make `users.team_id` nullable (or keep as primary)
 
 ### 2. Team Hierarchy
-
-**Future:** Teams can have parent teams
-
-**Design:**
-```typescript
-@ManyToOne(() => Team)
-parentTeam?: Team;
-
-@OneToMany(() => Team, (team) => team.parentTeam)
-children?: Team[];
-```
+- Teams can have parent teams
+- Add `parentTeam` relationship
 
 ### 3. Team Roles
+- Role-based access within teams
+- Add `TeamRole` enum (OWNER, ADMIN, MEMBER, VIEWER)
 
-**Future:** Role-based access within teams
-
-**Design:**
-```typescript
-enum TeamRole {
-  OWNER,
-  ADMIN,
-  MEMBER,
-  VIEWER
-}
-```
-
-## Benefits
-
-1. **Safe:** Multi-layer delete protection
-2. **Flexible:** Easy to extend (many-to-many, hierarchy)
-3. **Testable:** Repository interface allows mocking
-4. **Maintainable:** Clear separation of concerns
-5. **Secure:** Input validation, output sanitization
-6. **SOLID:** Follows all principles
+---
 
 ## Summary
 
 The Team domain provides:
-- ✅ Clean Architecture structure
-- ✅ Admin ownership concept
-- ✅ Safe delete operations
-- ✅ One-to-many relationship with users
-- ✅ Future extensibility (many-to-many ready)
-- ✅ Database + application level safety
-
+- Clean Architecture structure
+- Admin ownership concept
+- Safe delete operations
+- One-to-many relationship with users
+- Future extensibility (many-to-many ready)
+- Database + application level safety

@@ -98,6 +98,8 @@ out/
 # Vercel
 .vercel
 
+# Next.js
+.next/
+
 # Testing
 coverage-report.txt
-

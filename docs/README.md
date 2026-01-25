@@ -1,15 +1,14 @@
 # FlowHub Documentation
 
-This directory contains all project documentation organized by category.
+Comprehensive documentation organized by category.
 
 ## Structure
 
-- **architecture/** - System architecture, design decisions, and technical documentation
-- **backend/** - Backend-specific documentation organized by module
-- **frontend/** - Frontend-specific documentation
-- **wso2/** - WSO2 API Gateway configuration and setup guides
-- **testing/** - Testing strategies, test cases, and checklists
-- **deployment/** - Deployment guides and development setup instructions
+- **architecture/** - System architecture, RBAC, and API routes
+- **backend/** - Backend module documentation
+- **frontend/** - Frontend component documentation
+- **wso2/** - WSO2 API Gateway configuration
+- **testing/** - Testing strategies and checklists
 
 ## Quick Links
 
@@ -18,5 +17,3 @@ This directory contains all project documentation organized by category.
 - [Frontend Documentation](./frontend/)
 - [WSO2 Configuration](./wso2/)
 - [Testing Guide](./testing/)
-- [Deployment Guide](./deployment/)
-

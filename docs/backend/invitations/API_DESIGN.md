@@ -1,4 +1,6 @@
-# Invitation Flow - API Design
+# Invitation API Design
+
+API endpoints and service logic for team invitations.
 
 ## API Endpoints
 
@@ -15,8 +17,8 @@
 {
   "email": "user@example.com",
   "teamId": "uuid-here",
-  "role": "USER",  // Optional, defaults to USER
-  "customMessage": "Welcome to our team!"  // Optional
+  "role": "USER",
+  "customMessage": "Welcome to our team!"
 }
 ```
 
@@ -53,8 +55,8 @@
 {
   "token": "invitation-token-here",
   "password": "secure-password-123",
-  "firstName": "John",  // Optional
-  "lastName": "Doe"      // Optional
+  "firstName": "John",
+  "lastName": "Doe"
 }
 ```
 
@@ -104,9 +106,6 @@
 }
 ```
 
-**Error Responses:**
-- `200 OK` - Always returns 200, check `valid` field
-
 ---
 
 ### 4. Get Team Invitations
@@ -125,20 +124,9 @@
     "email": "user1@example.com",
     "role": "USER",
     "teamId": "team-uuid",
-    "invitedById": "admin-uuid",
     "expiresAt": "2024-01-15T00:00:00Z",
     "createdAt": "2024-01-08T00:00:00Z",
     "usedAt": null
-  },
-  {
-    "id": "invitation-uuid-2",
-    "email": "user2@example.com",
-    "role": "ADMIN",
-    "teamId": "team-uuid",
-    "invitedById": "admin-uuid",
-    "expiresAt": "2024-01-10T00:00:00Z",
-    "createdAt": "2024-01-03T00:00:00Z",
-    "usedAt": "2024-01-05T00:00:00Z"
   }
 ]
 ```
@@ -185,142 +173,51 @@
 ## Database Constraints
 
 ### 1. Unique Token
-
 ```sql
 CREATE UNIQUE INDEX ON invitations(token);
 ```
 
-**Purpose:** Ensures token uniqueness, prevents collisions
-
----
-
 ### 2. Duplicate Prevention
-
 ```sql
 CREATE UNIQUE INDEX ON invitations(email, team_id) 
 WHERE used_at IS NULL;
 ```
 
-**Purpose:** Prevents multiple active invitations for same email+team
-
-**Note:** Partial index (only active invitations)
-
----
+Prevents multiple active invitations for same email+team.
 
 ### 3. Foreign Keys
-
 ```sql
--- Team relationship
 FOREIGN KEY (team_id) REFERENCES teams(id) ON DELETE CASCADE;
-
--- Inviter relationship
 FOREIGN KEY (invited_by_id) REFERENCES users(id) ON DELETE CASCADE;
 ```
-
-**Purpose:** Maintains referential integrity, auto-cleanup
 
 ---
 
 ## Security Considerations
 
-### 1. Token Security
-
-- **Generation:** Cryptographically secure (256-bit)
-- **Storage:** Never logged or exposed
-- **Transmission:** HTTPS only
-- **Expiration:** 7 days default
-
-### 2. Authorization
-
-- **Create:** Only ADMIN or team admin
-- **Accept:** Public (token provides auth)
-- **View:** Team admin only
-
-### 3. Duplicate Prevention
-
-- **Database:** Unique constraints
-- **Application:** Multiple validation layers
-- **Race conditions:** Protected by DB constraints
-
-### 4. Input Validation
-
-- **Email:** Format validation
-- **Password:** Strength requirements (min 8 chars)
-- **Role:** Enum validation
-
----
-
-## Usage Examples
-
-### Example 1: Admin Invites User
-
-```bash
-POST /invitations
-Authorization: Bearer <ADMIN_TOKEN>
-Content-Type: application/json
-
-{
-  "email": "newuser@example.com",
-  "teamId": "team-uuid",
-  "role": "USER"
-}
-
-# Response: 201 Created
-# Email sent with invitation link
-```
-
-### Example 2: User Accepts Invitation
-
-```bash
-POST /invitations/accept
-Content-Type: application/json
-
-{
-  "token": "invitation-token-from-email",
-  "password": "secure-password-123",
-  "firstName": "John",
-  "lastName": "Doe"
-}
-
-# Response: 200 OK
-# User account created, tokens returned
-```
-
-### Example 3: Validate Token (Frontend)
-
-```bash
-GET /invitations/validate/invitation-token-here
-
-# Response: 200 OK
-{
-  "valid": true,
-  "email": "user@example.com",
-  "teamName": "Engineering",
-  "expiresAt": "2024-01-15T00:00:00Z"
-}
-```
+1. **Token Security:** Cryptographically secure (256-bit), never logged or exposed
+2. **Authorization:** Only ADMIN or team admin can invite
+3. **Duplicate Prevention:** Database unique constraints + application validation
+4. **Input Validation:** Email format, password strength, role enum validation
 
 ---
 
 ## Summary
 
-### API Endpoints:
-- ✅ `POST /invitations` - Create invitation (protected)
-- ✅ `POST /invitations/accept` - Accept invitation (public)
-- ✅ `GET /invitations/validate/:token` - Validate token (public)
-- ✅ `GET /invitations/team/:teamId` - List team invitations (protected)
+**API Endpoints:**
+- `POST /invitations` - Create invitation (protected)
+- `POST /invitations/accept` - Accept invitation (public)
+- `GET /invitations/validate/:token` - Validate token (public)
+- `GET /invitations/team/:teamId` - List team invitations (protected)
 
-### Service Logic:
-- ✅ Authorization checks
-- ✅ Duplicate prevention
-- ✅ Token generation
-- ✅ User creation
+**Service Logic:**
+- Authorization checks
+- Duplicate prevention
+- Token generation
+- User creation
 
-### Security:
-- ✅ Secure token generation
-- ✅ Token expiration
-- ✅ One-time use
-- ✅ Database constraints
-
-The invitation flow is complete, secure, and ready for production use.
-
+**Security:**
+- Secure token generation
+- Token expiration
+- One-time use
+- Database constraints

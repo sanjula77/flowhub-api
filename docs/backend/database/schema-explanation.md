@@ -1,25 +1,23 @@
-# Database Schema Explanation
+# Database Schema
 
-## Overview
-
-This schema implements a multi-tenant SaaS database design with teams, users, and role-based access control.
+Multi-tenant SaaS database design with teams, users, and role-based access control.
 
 ## Table Structure
 
-### 1. Teams Table
+### Teams Table
 
-**Purpose:** Represents organizational units (companies, departments, etc.)
+**Purpose:** Organizational units (companies, departments)
 
 **Key Fields:**
-- `id` (UUID): Primary key, auto-generated
+- `id` (UUID): Primary key
 - `name`: Team display name
 - `slug`: URL-friendly identifier (unique, indexed)
 - `deleted_at`: Soft delete timestamp
 
 **Design Decisions:**
-- UUID primary keys: Better for distributed systems, no sequential ID leaks
-- Slug field: Enables friendly URLs (`/teams/engineering`) and prevents name conflicts
-- Soft delete: Preserves data integrity, allows recovery
+- UUID primary keys for distributed systems
+- Slug field for friendly URLs and name conflict prevention
+- Soft delete for data preservation
 
 **Constraints:**
 - Name cannot be empty (CHECK constraint)
@@ -27,7 +25,7 @@ This schema implements a multi-tenant SaaS database design with teams, users, an
 
 ---
 
-### 2. Users Table
+### Users Table
 
 **Purpose:** User accounts with team membership and roles
 
@@ -40,9 +38,9 @@ This schema implements a multi-tenant SaaS database design with teams, users, an
 - `deleted_at`: Soft delete timestamp
 
 **Design Decisions:**
-- Email uniqueness: Database-level UNIQUE constraint prevents duplicates
-- Team relationship: Foreign key with ON DELETE RESTRICT prevents orphaned users
-- Role enum: Database-level type safety, prevents invalid values
+- Email uniqueness: Database-level UNIQUE constraint
+- Team relationship: Foreign key with ON DELETE RESTRICT
+- Role enum: Database-level type safety
 - Soft delete: Maintains referential integrity
 
 **Constraints:**
@@ -66,20 +64,18 @@ Team (1) ──────< (Many) Users
 
 **Migration Path to Many-to-Many:**
 
-When you need users in multiple teams:
-
-1. Add `user_teams` junction table (already designed, commented out)
+1. Add `user_teams` junction table
 2. Change `users.team_id` to nullable (or keep as "primary team")
 3. Migrate existing data to `user_teams`
 4. Update application code to use junction table
 
 ---
 
-## Indexes Explained
+## Indexes
 
 ### Partial Indexes (WHERE deleted_at IS NULL)
 
-**Why:** Only index active records, smaller index size, faster queries
+Only index active records for smaller index size and faster queries.
 
 **Examples:**
 - `idx_users_email`: Fast email lookup for active users only
@@ -87,16 +83,15 @@ When you need users in multiple teams:
 
 ### Composite Indexes
 
-**Why:** Optimize common query patterns
+Optimize common query patterns:
 
-**Example:**
 - `idx_users_team_role`: Optimizes queries like "get all ADMIN users in team X"
 
 ---
 
 ## Constraints & Safety
 
-### 1. Email Uniqueness
+### Email Uniqueness
 
 **Database Level:**
 ```sql
@@ -107,13 +102,9 @@ email VARCHAR(255) NOT NULL UNIQUE
 - TypeORM unique constraint
 - Service-level validation before insert
 
-**Protection:**
-- Prevents duplicate emails even with race conditions
-- Database rejects duplicate before application sees it
+**Protection:** Prevents duplicate emails even with race conditions
 
----
-
-### 2. Role Enforcement
+### Role Enforcement
 
 **Database Level:**
 ```sql
@@ -125,13 +116,9 @@ role user_role NOT NULL DEFAULT 'USER'
 - TypeScript enum type
 - RolesGuard validation
 
-**Protection:**
-- Database rejects invalid role values (e.g., 'SUPER_ADMIN' not in enum)
-- Application can't accidentally insert invalid role
+**Protection:** Database rejects invalid role values
 
----
-
-### 3. Safe Delete Behavior
+### Safe Delete Behavior
 
 **ON DELETE RESTRICT:**
 ```sql
@@ -147,80 +134,26 @@ team_id UUID NOT NULL REFERENCES teams(id) ON DELETE RESTRICT
 - Data preserved for audit/recovery
 - Queries filter out deleted records
 
-**Protection:**
-- No accidental data loss
-- Can recover deleted records
-- Maintains referential integrity
-
 ---
 
 ## Edge Cases Handled
 
-### 1. Duplicate Emails
-
-**Scenario:** Two requests try to create same email simultaneously
-
-**Protection:**
-- Database UNIQUE constraint catches it
-- Application gets constraint violation error
-- Can retry or show user-friendly message
-
----
-
-### 2. Invalid Role Values
-
-**Scenario:** Application bug tries to insert 'SUPER_USER'
-
-**Protection:**
-- Database ENUM rejects it
-- Query fails before data corruption
-- Application must use valid enum value
-
----
-
-### 3. Deleting Team with Users
-
-**Scenario:** Admin tries to delete team that has active users
-
-**Protection:**
-- `ON DELETE RESTRICT` prevents deletion
-- Database throws foreign key constraint error
-- Application must delete/migrate users first
-
----
-
-### 4. Email Format Validation
-
-**Scenario:** User tries to register with invalid email 'notanemail'
-
-**Protection:**
-- Database CHECK constraint validates format
-- Regex pattern ensures basic email structure
-- Application can add more sophisticated validation
-
----
-
-### 5. Empty Values
-
-**Scenario:** Application tries to insert empty email or password
-
-**Protection:**
-- CHECK constraints prevent empty strings
-- NOT NULL constraints prevent NULL values
-- Database enforces data quality
+1. **Duplicate Emails:** Database UNIQUE constraint catches simultaneous requests
+2. **Invalid Role Values:** Database ENUM rejects invalid values
+3. **Deleting Team with Users:** `ON DELETE RESTRICT` prevents deletion
+4. **Email Format Validation:** Database CHECK constraint validates format
+5. **Empty Values:** CHECK constraints prevent empty strings
 
 ---
 
 ## Scaling to Many-to-Many
 
 ### Current Schema (One-to-Many)
-
 ```sql
 users.team_id → teams.id (one team per user)
 ```
 
 ### Future Schema (Many-to-Many)
-
 ```sql
 users (no team_id)
 user_teams (junction table)
@@ -230,71 +163,34 @@ user_teams (junction table)
 ```
 
 **Migration Steps:**
-
-1. **Create junction table:**
-   ```sql
-   CREATE TABLE user_teams (...);
-   ```
-
-2. **Migrate existing data:**
-   ```sql
-   INSERT INTO user_teams (user_id, team_id, role)
-   SELECT id, team_id, role FROM users WHERE deleted_at IS NULL;
-   ```
-
-3. **Make team_id nullable (or keep as primary team):**
-   ```sql
-   ALTER TABLE users ALTER COLUMN team_id DROP NOT NULL;
-   ```
-
-4. **Update application code:**
-   - Change queries to use `user_teams` table
-   - Update TypeORM entities
-   - Update service methods
-
-**Benefits:**
-- Users can belong to multiple teams
-- Different roles per team
-- Maintains historical data (joined_at)
+1. Create junction table
+2. Migrate existing data
+3. Make team_id nullable (or keep as primary team)
+4. Update application code
 
 ---
 
 ## Query Examples
 
-### Get all users in a team:
 ```sql
+-- Get all users in a team
 SELECT * FROM active_users WHERE team_slug = 'engineering';
-```
 
-### Get all admins in a team:
-```sql
+-- Get all admins in a team
 SELECT * FROM active_users 
 WHERE team_slug = 'engineering' AND role = 'ADMIN';
-```
 
-### Count users per team:
-```sql
+-- Count users per team
 SELECT t.name, COUNT(u.id) as user_count
 FROM teams t
 LEFT JOIN users u ON u.team_id = t.id AND u.deleted_at IS NULL
 WHERE t.deleted_at IS NULL
 GROUP BY t.id, t.name;
-```
 
-### Soft delete a user:
-```sql
+-- Soft delete a user
 UPDATE users 
 SET deleted_at = CURRENT_TIMESTAMP 
 WHERE id = 'user-uuid';
-```
-
-### Check if email exists:
-```sql
-SELECT EXISTS(
-    SELECT 1 FROM users 
-    WHERE email = 'test@example.com' 
-    AND deleted_at IS NULL
-);
 ```
 
 ---
@@ -321,13 +217,10 @@ SELECT EXISTS(
 ## Summary
 
 This schema provides:
-- ✅ Multi-tenant support (teams)
-- ✅ User management with roles
-- ✅ Database-level constraints for safety
-- ✅ Soft delete for data preservation
-- ✅ Scalable to many-to-many relationships
-- ✅ Performance optimized with indexes
-- ✅ Edge case protection
-
-The design balances flexibility, safety, and performance while maintaining clear migration paths for future requirements.
-
+- Multi-tenant support (teams)
+- User management with roles
+- Database-level constraints for safety
+- Soft delete for data preservation
+- Scalable to many-to-many relationships
+- Performance optimized with indexes
+- Edge case protection

@@ -1,14 +1,13 @@
 # Authorization Matrix
 
-## Overview
+Role-based access control matrix for all API endpoints.
 
-This matrix shows which roles can access which endpoints.
+## Legend
 
-**Legend:**
-- ✅ = Allowed
-- ❌ = Denied
-- ⚠️ = Service-level validation (team admin check)
-- 🟡 = Own resource only
+- Allowed = Permission granted
+- Denied = Permission denied
+- Service-level validation = Team admin check required
+- Own resource only = Can only access own resource
 
 ---
 
@@ -16,14 +15,14 @@ This matrix shows which roles can access which endpoints.
 
 | Endpoint | Public | USER | ADMIN | Notes |
 |----------|--------|------|-------|-------|
-| `GET /users/me` | ❌ | ✅ | ✅ | Own profile only |
-| `GET /users` | ❌ | ❌ | ✅ | List all users |
-| `GET /users/:id` | ❌ | ❌ | ✅ | Any user by ID |
-| `GET /users/team/:teamId` | ❌ | ❌ | ✅ | Users in team |
-| `POST /users` | ❌ | ❌ | ✅ | Create user |
-| `PUT /users/:id` | ❌ | ❌ | ✅ | Update any user |
-| `PUT /users/me` | ❌ | 🟡 | 🟡 | Update own profile (role/teamId restricted) |
-| `DELETE /users/:id` | ❌ | ❌ | ✅ | Soft delete user |
+| `GET /users/me` | No | Yes | Yes | Own profile only |
+| `GET /users` | No | No | Yes | List all users |
+| `GET /users/:id` | No | No | Yes | Any user by ID |
+| `GET /users/team/:teamId` | No | No | Yes | Users in team |
+| `POST /users` | No | No | Yes | Create user |
+| `PUT /users/:id` | No | No | Yes | Update any user |
+| `PUT /users/me` | No | Own | Own | Update own profile (role/teamId restricted) |
+| `DELETE /users/:id` | No | No | Yes | Soft delete user |
 
 ---
 
@@ -31,14 +30,14 @@ This matrix shows which roles can access which endpoints.
 
 | Endpoint | Public | USER | ADMIN | Notes |
 |----------|--------|------|-------|-------|
-| `GET /teams/me` | ❌ | ✅ | ✅ | Own team only |
-| `GET /teams` | ❌ | ❌ | ✅ | List all teams |
-| `GET /teams/:id` | ❌ | ❌ | ✅ | Any team by ID |
-| `GET /teams/slug/:slug` | ❌ | ❌ | ✅ | Team by slug |
-| `POST /teams` | ❌ | ❌ | ✅ | Create team |
-| `POST /teams/:teamId/users/:userId` | ❌ | ⚠️ | ✅ | Team admin or system ADMIN |
-| `PUT /teams/:id` | ❌ | ❌ | ✅ | Update team |
-| `DELETE /teams/:id` | ❌ | ❌ | ✅ | Soft delete team |
+| `GET /teams/me` | No | Yes | Yes | Own team only |
+| `GET /teams` | No | No | Yes | List all teams |
+| `GET /teams/:id` | No | No | Yes | Any team by ID |
+| `GET /teams/slug/:slug` | No | No | Yes | Team by slug |
+| `POST /teams` | No | No | Yes | Create team |
+| `POST /teams/:teamId/users/:userId` | No | Service | Yes | Team admin or system ADMIN |
+| `PUT /teams/:id` | No | No | Yes | Update team |
+| `DELETE /teams/:id` | No | No | Yes | Soft delete team |
 
 ---
 
@@ -46,10 +45,10 @@ This matrix shows which roles can access which endpoints.
 
 | Endpoint | Public | USER | ADMIN | Notes |
 |----------|--------|------|-------|-------|
-| `POST /auth/signup` | ✅ | ✅ | ✅ | Anyone can signup |
-| `POST /auth/login` | ✅ | ✅ | ✅ | Anyone can login |
-| `POST /auth/refresh-token` | ✅ | ✅ | ✅ | Anyone with valid refresh token |
-| `POST /auth/logout` | ❌ | ✅ | ✅ | Any authenticated user |
+| `POST /auth/signup` | Yes | Yes | Yes | Public registration |
+| `POST /auth/login` | Yes | Yes | Yes | Public login |
+| `POST /auth/refresh-token` | Yes | Yes | Yes | Token refresh |
+| `POST /auth/logout` | No | Yes | Yes | Authenticated users |
 
 ---
 
@@ -57,10 +56,10 @@ This matrix shows which roles can access which endpoints.
 
 | Endpoint | Public | USER | ADMIN | Notes |
 |----------|--------|------|-------|-------|
-| `POST /invitations` | ❌ | ⚠️ | ✅ | Team admin or system ADMIN |
-| `POST /invitations/accept` | ✅ | ✅ | ✅ | Public (token provides auth) |
-| `GET /invitations/validate/:token` | ✅ | ✅ | ✅ | Public validation |
-| `GET /invitations/team/:teamId` | ❌ | ⚠️ | ✅ | Team admin or system ADMIN |
+| `POST /invitations` | No | Service | Yes | Team admin or system ADMIN |
+| `POST /invitations/accept` | Yes | Yes | Yes | Public (token provides auth) |
+| `GET /invitations/validate/:token` | Yes | Yes | Yes | Public validation |
+| `GET /invitations/team/:teamId` | No | Service | Yes | Team admin or system ADMIN |
 
 ---
 
@@ -68,70 +67,58 @@ This matrix shows which roles can access which endpoints.
 
 | Endpoint | Public | USER | ADMIN | Notes |
 |----------|--------|------|-------|-------|
-| `GET /projects` | ❌ | ✅ | ✅ | Any authenticated user |
-| `POST /projects` | ❌ | ❌ | ✅ | Create project |
-| `DELETE /projects/:id` | ❌ | ❌ | ✅ | Delete project |
-| `GET /projects/my-projects` | ❌ | ✅ | ✅ | Both roles can access |
+| `GET /projects` | No | Yes | Yes | Any authenticated user |
+| `POST /projects` | No | No | Yes | Create project |
+| `DELETE /projects/:id` | No | No | Yes | Delete project |
+| `GET /projects/my-projects` | No | Yes | Yes | Own projects |
 
 ---
 
 ## Permission Summary
 
-### USER Role Permissions
+### USER Role
 
 **Can:**
-- ✅ View own profile (`GET /users/me`)
-- ✅ Update own profile (`PUT /users/me`) - restricted fields
-- ✅ View own team (`GET /teams/me`)
-- ✅ View projects (`GET /projects`)
-- ✅ View own projects (`GET /projects/my-projects`)
-- ⚠️ Invite users to own team (if team admin)
-- ⚠️ View own team invitations (if team admin)
-- ⚠️ Add users to own team (if team admin)
+- View own profile (`GET /users/me`)
+- Update own profile (`PUT /users/me`) - restricted fields
+- View own team (`GET /teams/me`)
+- View projects (`GET /projects`)
+- View own projects (`GET /projects/my-projects`)
+- Invite users to own team (if team admin)
+- View own team invitations (if team admin)
 
 **Cannot:**
-- ❌ View other users
-- ❌ Create/update/delete users
-- ❌ View all teams
-- ❌ Create/update/delete teams
-- ❌ Create/delete projects
-- ❌ Access admin endpoints
+- View other users
+- Create/update/delete users
+- View all teams
+- Create/update/delete teams
+- Create/delete projects
 
----
-
-### ADMIN Role Permissions
+### ADMIN Role
 
 **Can:**
-- ✅ All USER permissions
-- ✅ View all users (`GET /users`)
-- ✅ Create users (`POST /users`)
-- ✅ Update any user (`PUT /users/:id`)
-- ✅ Delete users (`DELETE /users/:id`)
-- ✅ View all teams (`GET /teams`)
-- ✅ Create teams (`POST /teams`)
-- ✅ Update teams (`PUT /teams/:id`)
-- ✅ Delete teams (`DELETE /teams/:id`)
-- ✅ Add users to any team
-- ✅ Create/delete projects
-- ✅ Invite users to any team
-
-**Cannot:**
-- ❌ Nothing (full access)
+- All USER permissions
+- View all users (`GET /users`)
+- Create users (`POST /users`)
+- Update any user (`PUT /users/:id`)
+- Delete users (`DELETE /users/:id`)
+- View all teams (`GET /teams`)
+- Create/update/delete teams
+- Create/delete projects
+- Full system access
 
 ---
 
 ## Service-Level Validations
 
-Some endpoints allow both USER and ADMIN roles but perform additional validation:
+Endpoints marked with "Service-level validation" allow both USER and ADMIN roles but perform additional validation:
 
-### Team Admin Check
-
-**Endpoints:**
+**Team Admin Check:**
 - `POST /teams/:teamId/users/:userId`
 - `POST /invitations`
 - `GET /invitations/team/:teamId`
 
-**Validation:**
+**Validation Logic:**
 ```typescript
 const isSystemAdmin = user.role === UserRole.ADMIN;
 const isTeamAdmin = team.adminUserId === user.id;
@@ -142,86 +129,23 @@ if (!isSystemAdmin && !isTeamAdmin) {
 ```
 
 **Result:**
-- System ADMIN: ✅ Can access any team
-- Team Admin: ✅ Can access own team only
-- Regular USER: ❌ Cannot access
+- System ADMIN: Can access any team
+- Team Admin: Can access own team only
+- Regular USER: Cannot access
 
 ---
 
 ## Security Rules
 
-### Rule 1: Users Can Only View Own Profile
-
-**Endpoint:** `GET /users/me`
-**Implementation:** Uses `req.user.id` from JWT token
-**Security:** Cannot access other users' profiles
-
----
-
-### Rule 2: Users Cannot Change Own Role
-
-**Endpoint:** `PUT /users/me`
-**Implementation:** Removes `role` from DTO before update
-**Security:** Prevents self-promotion
-
----
-
-### Rule 3: Users Cannot Change Own Team
-
-**Endpoint:** `PUT /users/me`
-**Implementation:** Removes `teamId` from DTO before update
-**Security:** Prevents unauthorized team changes
-
----
-
-### Rule 4: Team Admin Validation
-
-**Endpoints:** Team management endpoints
-**Implementation:** Service checks `team.adminUserId === user.id`
-**Security:** Only actual team admins can manage their team
+1. **Users can only view own profile** - `GET /users/me` uses `req.user.id` from JWT
+2. **Users cannot change own role** - `PUT /users/me` removes `role` from DTO
+3. **Users cannot change own team** - `PUT /users/me` removes `teamId` from DTO
+4. **Team admin validation** - Service checks `team.adminUserId === user.id`
 
 ---
 
 ## Access Control Flow
 
 ```
-1. Request arrives
-   ↓
-2. JwtAuthGuard validates token
-   ↓
-3. RolesGuard checks @Roles() decorator
-   ↓
-4. If role matches → Allow
-   ↓
-5. If service validation needed → Check team admin
-   ↓
-6. If authorized → Proceed
-   ↓
-7. If unauthorized → Throw 403 Forbidden
+Request → JwtAuthGuard (token validation) → RolesGuard (role check) → Service Validation (team admin) → Controller
 ```
-
----
-
-## Summary
-
-### Public Access:
-- Authentication endpoints (signup, login, refresh)
-- Invitation acceptance
-- Token validation
-
-### Authenticated Access (Any User):
-- Own profile management
-- Own team viewing
-- Project viewing
-
-### Admin-Only Access:
-- User management
-- Team management
-- Project creation/deletion
-
-### Service-Validated Access:
-- Team admin operations
-- Cross-team restrictions
-
-The authorization matrix ensures proper access control at multiple levels: route guards, service validation, and business rules.
-

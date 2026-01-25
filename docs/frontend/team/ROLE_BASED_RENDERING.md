@@ -1,8 +1,6 @@
 # Role-Based Rendering Logic
 
-## Overview
-
-The Team Dashboard implements role-based rendering to show/hide features based on user permissions.
+Role-based rendering to show/hide features based on user permissions.
 
 ## Roles
 
@@ -24,6 +22,8 @@ The Team Dashboard implements role-based rendering to show/hide features based o
 - Can invite members to their team
 - Can remove members from their team
 - Same permissions as ADMIN for their team
+
+---
 
 ## Rendering Logic
 
@@ -55,9 +55,9 @@ const isAdmin = currentUser?.role === 'ADMIN' || currentUser?.id === team?.admin
 ```
 
 **Visibility:**
-- ✅ ADMIN role: Always visible
-- ✅ Team Admin: Visible for their team
-- ❌ Regular USER: Hidden
+- ADMIN role: Always visible
+- Team Admin: Visible for their team
+- Regular USER: Hidden
 
 ---
 
@@ -72,10 +72,10 @@ const isAdmin = currentUser?.role === 'ADMIN' || currentUser?.id === team?.admin
 ```
 
 **Visibility:**
-- ✅ ADMIN role: Visible for all members (except self)
-- ✅ Team Admin: Visible for team members (except self)
-- ❌ Regular USER: Hidden
-- ❌ Current user: Hidden (cannot remove self)
+- ADMIN role: Visible for all members (except self)
+- Team Admin: Visible for team members (except self)
+- Regular USER: Hidden
+- Current user: Hidden (cannot remove self)
 
 ---
 
@@ -88,71 +88,9 @@ if (userData.role === 'ADMIN' || userData.id === teamData.adminUserId) {
 ```
 
 **Loading:**
-- ✅ ADMIN role: Always loads
-- ✅ Team Admin: Loads for their team
-- ❌ Regular USER: Not loaded (empty list shown)
-
----
-
-### 5. Role Badges
-
-```typescript
-<span className={isMemberAdmin ? 'bg-purple-100' : 'bg-gray-100'}>
-  {member.role}
-</span>
-```
-
-**Display:**
-- Shows user's role (USER or ADMIN)
-- Different styling for ADMIN vs USER
-- Always visible to all authenticated users
-
----
-
-## Component Structure
-
-### TeamHeader Component
-
-**Props:**
-- `team`: Team data
-- `currentUser`: Current user data
-- `isAdmin`: Boolean flag
-- `onInviteClick`: Callback for invite button
-
-**Rendering:**
-- Team name and description (always visible)
-- Member count (always visible)
-- Role badges (always visible)
-- Invite button (admin only)
-
----
-
-### TeamMembers Component
-
-**Props:**
-- `members`: Array of team members
-- `currentUserId`: Current user's ID
-- `isAdmin`: Boolean flag
-- `onRefresh`: Callback to refresh data
-
-**Rendering:**
-- Member list (admin sees all, user sees empty)
-- Remove button (admin only, not for self)
-- "You" badge for current user
-
----
-
-### InviteUserModal Component
-
-**Props:**
-- `teamId`: Team ID to invite to
-- `onClose`: Close callback
-- `onSuccess`: Success callback
-
-**Rendering:**
-- Always accessible when modal is open
-- Backend validates permissions
-- Shows error if unauthorized
+- ADMIN role: Always loads
+- Team Admin: Loads for their team
+- Regular USER: Not loaded (empty list shown)
 
 ---
 
@@ -164,7 +102,7 @@ if (userData.role === 'ADMIN' || userData.id === teamData.adminUserId) {
 - Better UX (no confusing buttons)
 
 ### Backend (API)
-- **CRITICAL**: Backend validates all permissions
+- **CRITICAL:** Backend validates all permissions
 - Frontend hiding is for UX only
 - API returns 403 if unauthorized
 
@@ -211,7 +149,6 @@ if (userData.role === 'ADMIN' || userData.id === teamData.adminUserId) {
 ### Checking Team Admin Status
 
 ```typescript
-// In TeamDashboard component
 const isAdmin = 
   currentUser?.role === 'ADMIN' || 
   currentUser?.id === team?.adminUserId;
@@ -239,18 +176,17 @@ const isAdmin =
 ## Summary
 
 **Role-Based Rendering:**
-- ✅ Hides unauthorized features
-- ✅ Shows appropriate UI for each role
-- ✅ Prevents confusion
-- ✅ Better UX
+- Hides unauthorized features
+- Shows appropriate UI for each role
+- Prevents confusion
+- Better UX
 
 **Security:**
-- ✅ Backend validates all permissions
-- ✅ Frontend is UX layer only
-- ✅ Defense in depth
+- Backend validates all permissions
+- Frontend is UX layer only
+- Defense in depth
 
 **Implementation:**
-- ✅ Simple boolean checks
-- ✅ Conditional rendering
-- ✅ Clear component structure
-
+- Simple boolean checks
+- Conditional rendering
+- Clear component structure

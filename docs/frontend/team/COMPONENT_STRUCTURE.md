@@ -1,8 +1,6 @@
 # Team Dashboard - Component Structure
 
-## Overview
-
-The Team Dashboard is built with a modular component structure following React best practices.
+Modular component structure following React best practices.
 
 ## Component Hierarchy
 
@@ -48,12 +46,6 @@ TeamDashboard (page.tsx)
 - `loading`: Loading state
 - `error`: Error message
 - `showInviteModal`: Modal visibility
-- `refreshing`: Refresh state
-
-**API Calls:**
-- `GET /users/me` - Get current user
-- `GET /teams/me` - Get user's team
-- `GET /users/team/:teamId` - Get team members (admin only)
 
 ---
 
@@ -74,11 +66,6 @@ TeamDashboard (page.tsx)
 - Role badges
 - Invite button (admin only)
 
-**Rendering Logic:**
-```typescript
-{isAdmin && <InviteButton />}
-```
-
 ---
 
 ### 3. TeamMembers (`components/team/TeamMembers.tsx`)
@@ -97,11 +84,6 @@ TeamDashboard (page.tsx)
 - Role badges
 - "You" indicator
 - Remove buttons (admin only, not for self)
-
-**Rendering Logic:**
-```typescript
-{isAdmin && !isCurrentUser && <RemoveButton />}
-```
 
 **Empty State:**
 - Shows message when no members
@@ -125,62 +107,6 @@ TeamDashboard (page.tsx)
 - Form validation
 - Error handling
 - Loading state
-
-**API Call:**
-- `POST /invitations` - Create invitation
-
----
-
-### 5. LoadingSpinner (`components/ui/LoadingSpinner.tsx`)
-
-**Purpose:** Reusable loading indicator
-
-**Features:**
-- Animated spinner
-- Centered layout
-- Full screen overlay
-
----
-
-### 6. ErrorMessage (`components/ui/ErrorMessage.tsx`)
-
-**Purpose:** Reusable error display
-
-**Props:**
-- `message`: Error message
-- `onRetry`: Optional retry callback
-
-**Features:**
-- Error icon
-- Error message
-- Retry button (optional)
-
----
-
-## File Structure
-
-```
-frontend/
-├── app/
-│   └── team/
-│       ├── page.tsx                    # Main dashboard page
-│       └── COMPONENT_STRUCTURE.md       # This file
-├── components/
-│   ├── team/
-│   │   ├── TeamHeader.tsx              # Team header component
-│   │   ├── TeamMembers.tsx             # Members list component
-│   │   ├── InviteUserModal.tsx         # Invite modal component
-│   │   └── ROLE_BASED_RENDERING.md     # Role logic documentation
-│   └── ui/
-│       ├── LoadingSpinner.tsx           # Loading component
-│       └── ErrorMessage.tsx            # Error component
-├── lib/
-│   ├── auth.ts                         # Auth utilities
-│   └── api.ts                          # API integration
-└── types/
-    ├── team.ts                         # Team type definitions
-    └── user.ts                          # User type definitions
-```
 
 ---
 
@@ -216,20 +142,6 @@ frontend/
 6. On error: Show error message
 ```
 
-### Remove Member Flow
-
-```
-1. Admin clicks "Remove" on member
-   ↓
-2. Confirm dialog
-   ↓
-3. DELETE /users/:id
-   ↓
-4. On success: Refresh members list
-   ↓
-5. On error: Show error message
-```
-
 ---
 
 ## API Integration Pattern
@@ -237,7 +149,6 @@ frontend/
 ### Secure Cookie-Based Auth
 
 ```typescript
-// All API calls use fetchWithAuth
 const res = await fetchWithAuth(`${API_URL}/teams/me`, {
   credentials: 'include', // Sends cookies
 });
@@ -263,12 +174,6 @@ try {
   // Handle error
 }
 ```
-
-**Pattern:**
-- Try-catch for network errors
-- Check response.ok
-- Extract error message
-- Show user-friendly message
 
 ---
 
@@ -297,56 +202,28 @@ try {
 
 ## Best Practices
 
-### 1. Component Separation
-
-- Each component has single responsibility
-- Props are well-defined
-- Components are reusable
-
-### 2. Type Safety
-
-- TypeScript interfaces for all data
-- Props are typed
-- API responses are typed
-
-### 3. Error Handling
-
-- Try-catch blocks
-- User-friendly error messages
-- Retry mechanisms
-
-### 4. Loading States
-
-- Loading spinners
-- Disabled buttons during actions
-- Skeleton screens (optional)
-
-### 5. Accessibility
-
-- Semantic HTML
-- ARIA labels (can be added)
-- Keyboard navigation
-- Screen reader friendly
+1. **Component Separation:** Each component has single responsibility
+2. **Type Safety:** TypeScript interfaces for all data
+3. **Error Handling:** Try-catch blocks, user-friendly messages
+4. **Loading States:** Loading spinners, disabled buttons during actions
+5. **Accessibility:** Semantic HTML, ARIA labels, keyboard navigation
 
 ---
 
 ## Summary
 
 **Component Structure:**
-- ✅ Modular and reusable
-- ✅ Clear separation of concerns
-- ✅ Well-organized file structure
+- Modular and reusable
+- Clear separation of concerns
+- Well-organized file structure
 
 **API Integration:**
-- ✅ Secure cookie-based auth
-- ✅ Proper error handling
-- ✅ Type-safe API calls
+- Secure cookie-based auth
+- Proper error handling
+- Type-safe API calls
 
 **User Experience:**
-- ✅ Loading states
-- ✅ Error messages
-- ✅ Smooth interactions
-- ✅ Responsive design
-
-The component structure follows React and Next.js best practices for maintainability and scalability.
-
+- Loading states
+- Error messages
+- Smooth interactions
+- Responsive design
